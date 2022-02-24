@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import chalk from 'chalk';
 import inquirer from 'inquirer';
 import gradient from 'gradient-string';
 import chalkAnimation from 'chalk-animation';
@@ -6,18 +7,20 @@ import figlet from 'figlet';
 import { createSpinner } from 'nanospinner';
 import clipboard from 'clipboardy';
 
-let passwordLength, createdPassword;
+let passwordLength, createdPassword; 
 
 const generatePassword = (passwordLength) => {
     const numberChars = "0123456789";
     const upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const lowerChars = "abcdefghijklmnopqrstuvwxyz";
-    const allChars = numberChars + upperChars + lowerChars;
+    const specialChars = "!@#$%^&*_-";
+    const allChars = numberChars + upperChars + lowerChars + specialChars;
     let randPasswordArray = Array(passwordLength);
     randPasswordArray[0] = numberChars;
     randPasswordArray[1] = upperChars;
     randPasswordArray[2] = lowerChars;
-    randPasswordArray = randPasswordArray.fill(allChars, 3);
+    randPasswordArray[3] = specialChars;
+    randPasswordArray = randPasswordArray.fill(allChars, 5);
     return shuffleArray(randPasswordArray.map(function (x) { return x[Math.floor(Math.random() * x.length)] })).join('');
 };
 
@@ -57,7 +60,7 @@ async function askForPasswordLength() {
     if (answer.password_length && new RegExp(/\d+/).test(answer.password_length)) {
         passwordLength = parseInt(answer.password_length);
     } else {
-        console.log('Only numbers are allowed');
+        // console.error(`${chalk.bgRed('Only numbers are allowed')}`);
         process.exit(1);
     }
 }
@@ -75,7 +78,8 @@ async function generateUserPassword() {
     createdPassword = generatePassword(passwordLength);
     if (createdPassword) {
         const rainbowTitle = chalkAnimation.rainbow(`Your Password '${createdPassword}' has been copied to clipboard`);
-        await sleep(800);
+        await copyPasswordToClipboard();
+        await sleep();
         rainbowTitle.stop();
         process.exit(1);
     }
@@ -89,4 +93,3 @@ async function copyPasswordToClipboard() {
         clipboard.readSync();
     }
 }
-await copyPasswordToClipboard();
